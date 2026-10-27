@@ -9,10 +9,12 @@ public class AuthService {
     private static final String AUTHENTICATED_FLOW = "authenticated-with-legacy-flow";
 
     private final LegacyDatabase database;
+    private final TokenService tokenService;
 
     @Inject
-    public AuthService(LegacyDatabase database) {
+    public AuthService(LegacyDatabase database, TokenService tokenService) {
         this.database = database;
+        this.tokenService = tokenService;
     }
 
     public LoginResponse authenticate(String username, String password) {
@@ -26,8 +28,8 @@ public class AuthService {
                 StringEscapeUtils.escapeHtml4(user.displayName()),
                 user.role());
         return new LoginResponse(
-                LegacyTokenUtil.create(user.username(), user.role()),
-                LegacyTokenUtil.TOKEN_EXPIRY_SECONDS,
+                tokenService.create(user.username(), user.role()),
+                TokenService.TOKEN_EXPIRY_SECONDS,
                 responseUser,
                 AUTHENTICATED_FLOW);
     }

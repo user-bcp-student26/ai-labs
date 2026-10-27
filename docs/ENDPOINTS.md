@@ -2,7 +2,7 @@
 
 ## Estado del contrato
 
-Este documento registra el contrato **observado** en el codigo actual y en una ejecucion local de auth; no registra una aprobacion de compatibilidad por consumidores. No hay un contrato **acordado** confirmado. Siguen pendientes la compatibilidad del formato del token, el allowlist CORS y la confirmacion de los clientes, conforme a H-AUTH-03, H-AUTH-04 y H-AUTH-08 en `HALLAZGOS.md`.
+Este documento registra el contrato observado en el codigo actual y en una ejecucion local de auth; la compatibilidad del nuevo formato de token con consumidores externos no se ha verificado.
 
 ## `GET /q/health`
 
@@ -88,7 +88,7 @@ Los campos se declaran en `auth/src/main/java/com/bcp/workshop/auth/LoginRequest
 
 | campo | tipo | descripcion |
 |---|---|---|
-| `token` | string | Token codificado emitido por el servicio. Su contenido cambia con el tiempo de expiracion. |
+| `token` | string | Token versionado `v1` con claims codificados y firma HMAC-SHA-256. No publicar su contenido en logs. |
 | `expiresIn` | integer | Duracion declarada del token, en segundos; el valor actual es `3600`. |
 | `user` | object | Perfil del usuario autenticado. |
 | `user.username` | string | Nombre de usuario. |
@@ -96,7 +96,7 @@ Los campos se declaran en `auth/src/main/java/com/bcp/workshop/auth/LoginRequest
 | `user.role` | string | Rol del usuario, por ejemplo `STUDENT`. |
 | `debug` | string | Indicador fijo del flujo actual: `authenticated-with-legacy-flow`. |
 
-La forma del DTO esta en `auth/src/main/java/com/bcp/workshop/auth/LoginResponse.java:3-4`; los valores y el token se construyen en `auth/src/main/java/com/bcp/workshop/auth/AuthService.java:18-33`. El token del ejemplo es un marcador, no un token reutilizable; el resto de los campos refleja la respuesta observada con el usuario ficticio.
+La forma del DTO esta en `auth/src/main/java/com/bcp/workshop/auth/LoginResponse.java:3-4`; los valores y el token se construyen en `auth/src/main/java/com/bcp/workshop/auth/AuthService.java` y `auth/src/main/java/com/bcp/workshop/auth/TokenService.java`. El token del ejemplo es un marcador, no un token reutilizable; el resto de los campos refleja la respuesta observada con el usuario ficticio.
 
 ```json
 {
@@ -131,10 +131,10 @@ Los status y cuerpos propios estan definidos en `auth/src/main/java/com/bcp/work
 
 - El password viaja en el cuerpo del request. Usa HTTPS en redes no locales; el servicio no fuerza TLS desde este recurso.
 - Las contraseñas se verifican contra hashes PBKDF2-HMAC-SHA256 con salt (`auth/src/main/java/com/bcp/workshop/auth/PasswordHasher.java:10-44`).
-- El token actual **no esta firmado**: es Base64 de datos concatenados y un secreto hardcodeado. Aunque incluye una expiracion y `expiresIn` informa 3600 segundos, no hay verificacion del token ni aplicacion de su expiracion en este servicio. No debe tratarse como prueba criptografica de identidad. Evidencia: `auth/src/main/java/com/bcp/workshop/auth/LegacyTokenUtil.java:8-15`. H-AUTH-03 y H-AUTH-04 siguen pendientes.
-- CORS esta habilitado con origen `/.*/`, que acepta cualquier origen en la configuracion actual (`auth/src/main/resources/application.properties:4-8`). No implica que el endpoint requiera ni valide un token.
+- El token `v1` usa firma HMAC-SHA-256 y una clave de al menos 32 bytes obtenida de `AUTH_TOKEN_SECRET`; las pruebas usan una clave aislada de test (`auth/src/main/java/com/bcp/workshop/auth/TokenService.java` y `auth/src/main/resources/application.properties`). El despliegue Compose requiere esta variable. La verificacion de firma y expiracion existe en auth, pero no se aplica a rutas protegidas en este cambio.
+- CORS usa `AUTH_CORS_ORIGINS` en perfiles dev y prod; el perfil test permite solo `http://localhost:4200` (`auth/src/main/resources/application.properties`). Compose requiere esa variable. No implica que el endpoint requiera ni valide un token.
 - La respuesta 500 es generica para el cliente; el detalle de la excepcion se escribe en el log del servidor (`auth/src/main/java/com/bcp/workshop/auth/AuthResource.java:49-53`).
-- La linea base esta **observada**, no acordada con consumidores. La compatibilidad del token, los origenes CORS permitidos y la aprobacion del contrato siguen siendo preguntas abiertas (H-AUTH-03, H-AUTH-04 y H-AUTH-08).
+- El formato de token y la configuracion CORS cambiaron localmente; la compatibilidad del formato `v1` con consumidores externos y los valores de `AUTH_CORS_ORIGINS` de cada entorno deben confirmarse durante el despliegue.
 
 ## Documentos consultados
 
@@ -148,7 +148,7 @@ Los status y cuerpos propios estan definidos en `auth/src/main/java/com/bcp/work
 - `auth/src/main/java/com/bcp/workshop/auth/AuthService.java`
 - `auth/src/main/java/com/bcp/workshop/auth/LoginRequest.java`
 - `auth/src/main/java/com/bcp/workshop/auth/LoginResponse.java`
-- `auth/src/main/java/com/bcp/workshop/auth/LegacyTokenUtil.java`
+- `auth/src/main/java/com/bcp/workshop/auth/TokenService.java`
 - `auth/src/main/java/com/bcp/workshop/auth/PasswordHasher.java`
 - `auth/src/main/resources/application.properties`
 - `auth/src/test/java/com/bcp/workshop/auth/AuthResourceTest.java`

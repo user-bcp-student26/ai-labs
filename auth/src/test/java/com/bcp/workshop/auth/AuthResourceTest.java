@@ -13,6 +13,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -24,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuthResourceTest {
     private static final String DATABASE_URL = System.getenv()
             .getOrDefault("AUTH_DB_URL", "jdbc:sqlite:./data/workshop.db");
+    private static final byte[] TEST_SIGNING_KEY = "test-only-auth-signing-key-not-for-real-use"
+            .getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
     @Test
     void reportsHealthWithoutAuthentication() {
@@ -204,7 +207,7 @@ class AuthResourceTest {
                 throw new IllegalStateException("simulated-database-failure");
             }
         };
-        resource.authService = new AuthService(database);
+        resource.authService = new AuthService(database, new TokenService(TEST_SIGNING_KEY));
         LoginRequest request = new LoginRequest();
         request.username = "student";
         request.password = "Workshop123!";
@@ -218,13 +221,23 @@ class AuthResourceTest {
     }
 
     @Test
-    void allowsUnlistedOriginInCorsPreflight() {
+    void allowsConfiguredOriginInCorsPreflight() {
+        given()
+                .header("Origin", "http://localhost:4200")
+                .header("Access-Control-Request-Method", "POST")
+                .when().options("/auth/login")
+                .then()
+                .header("Access-Control-Allow-Origin", is("http://localhost:4200"));
+    }
+
+    @Test
+    void rejectsUnconfiguredOriginInCorsPreflight() {
         given()
                 .header("Origin", "http://unlisted.example")
                 .header("Access-Control-Request-Method", "POST")
                 .when().options("/auth/login")
                 .then()
-                .header("Access-Control-Allow-Origin", is("http://unlisted.example"));
+                .header("Access-Control-Allow-Origin", nullValue());
     }
 
     @Test

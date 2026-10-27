@@ -2,6 +2,9 @@ name: ai-labs
 services:
   auth:
     build: ./auth
+    environment:
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:?AUTH_TOKEN_SECRET is required}
+      AUTH_CORS_ORIGINS: ${AUTH_CORS_ORIGINS:?AUTH_CORS_ORIGINS is required}
     ports:
       - "127.0.0.1:8080:8080"
   api:
