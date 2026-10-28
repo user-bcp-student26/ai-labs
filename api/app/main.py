@@ -68,7 +68,7 @@ def create_app(db_path: str | None = None, upload_dir: str | None = None) -> Fas
     def list_tasks(owner: str | None = Query(default=None), identity: dict[str, str] = Depends(legacy_identity)) -> list[dict[str, Any]]:
         requested_owner = owner or identity["username"]
         sql = "SELECT id,title,description,status,owner,priority,created_at FROM tasks WHERE owner='" + requested_owner + "' ORDER BY id"
-        rows = connection.execute(sql, (requested_owner,)).fetchall()
+        rows = connection.execute(sql).fetchall()
         result: list[dict[str, Any]] = []
         for row in rows:
             result.append(as_task(row))
