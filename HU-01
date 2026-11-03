@@ -1,0 +1,11 @@
+Actua como el Skill feature-intake-spec-checklist
+(.github/skills/feature-intake-spec-checklist/SKILL.md).
+
+Desde la raíz de ai-labs, lee HU-01.md y usa el archivo como unica entrada.
+Genera UNICAMENTE el documento Output definido en el contrato del Skill,
+con sus nueve secciones: Summary, Scope (in/out), Assumptions,
+Technical decisions to make, Risks and mitigations, Acceptance criteria,
+Validation plan, Suggested tasks by role y Open questions.
+
+No inventes requisitos. Marca como pregunta abierta toda decision que la HU
+no confirme. No incluyas valores de tokens, secretos ni credenciales.

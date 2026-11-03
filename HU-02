@@ -1,0 +1,19 @@
+Actua como el Skill feature-intake-spec-checklist
+(.github/skills/feature-intake-spec-checklist/SKILL.md).
+
+Desde la raíz de ai-labs, lee HU-02.md y usa el archivo como unica entrada.
+Genera UNICAMENTE el documento Output definido en el contrato del Skill,
+con sus nueve secciones: Summary, Scope (in/out), Assumptions,
+Technical decisions to make, Risks and mitigations, Acceptance criteria,
+Validation plan, Suggested tasks by role y Open questions.
+
+No inventes requisitos. Marca como pregunta abierta toda decision que la HU
+no confirme. No incluyas valores de tokens, secretos ni credenciales.
+
+Como QE Leader, quiero validar los medios de pago habilitados en el canal NTLC según sus reglas de negocio, para comprobar que los resultados de las pruebas coincidan con los criterios de aceptación definidos.
+
+Criterios de aceptación
+Crear un modulo de medio de pago en canal NTLC en ambiente CERTIFICACIÓN y ejecutar tipos de prueba como PERFORMANCE, SEGURIDAD, FUNCIONAL, CONTABILIDAD.
+Debe soportar tarjeta credito y debito
+solo usuarios con RUC.
+Y como output mostrar pago exitoso y su boucher para el cliente y ver que se descuenta de su cuenta el monto pgado
